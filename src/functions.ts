@@ -34,7 +34,9 @@ const convertWcagTag = (tags: string[]): string[] => {
         console.warn(`Unrecognized WCAG tag: ${tag}`);
         return '';
     }
-  }).filter(tag => tag !== '');
+  }).filter(tag => {
+    return tag !== '';
+  });
 }
 
 /**
@@ -117,14 +119,14 @@ export const convertTestResultToText = (structuredResults: AccessibilityTestOutp
       if (result.error) {
         resultTextList.push(`  Error: ${result.error}`);
       } else {
-        resultTextList.push(`  Violations: ${result.violations?.length ?? 0}`);
+        resultTextList.push(`  Violations: ${String(result.violations?.length ?? 0)}`);
 
         const resultViolationText = result.violations?.map((v) => {
           return [
-            `    - [${v.impact?.toUpperCase()}] ${v.id}: ${v.description} (Nodes: ${v.nodes.length}, Help: ${v.helpUrl})`,
+            `    - [${String(v.impact?.toUpperCase() ?? 'N/A')}] ${v.id}: ${v.description} (Nodes: ${String(v.nodes.length)}, Help: ${v.helpUrl})`,
             v.nodes
             .map((node, index) => {
-              return `      Node ${index + 1}: ${node.html}`
+              return `      Node ${String(index + 1)}: ${node.html}`
             })
             .join('\n')
           ].join('\n');
@@ -134,9 +136,9 @@ export const convertTestResultToText = (structuredResults: AccessibilityTestOutp
           resultTextList.push(...resultViolationText);
         }
 
-        resultTextList.push(`  Passes: ${result.passesCount ?? 0}`);
-        resultTextList.push(`  Incomplete: ${result.incompleteCount ?? 0}`);
-        resultTextList.push(`  Inapplicable: ${result.inapplicableCount ?? 0}`);
+        resultTextList.push(`  Passes: ${String(result.passesCount ?? 0)}`);
+        resultTextList.push(`  Incomplete: ${String(result.incompleteCount ?? 0)}`);
+        resultTextList.push(`  Inapplicable: ${String(result.inapplicableCount ?? 0)}`);
       }
       return resultTextList.join('\n');
     })

@@ -4,7 +4,9 @@
   "main": "build/index.js",
   "scripts": {
     "build": "tsc && chmod 755 build/index.js",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+    "lint": "eslint .",
+    "format": "npm run lint -- --fix"
   },
   "bin": {
     "a11y-mcp": "build/index.js"
@@ -38,8 +40,12 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.25.1",
     "@types/node": "^22.15.2",
-    "typescript": "^5.8.3"
+    "eslint": "^9.25.1",
+    "eslint-config-flat-gitignore": "^2.1.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.0"
   },
   "volta": {
     "node": "22.15.0",

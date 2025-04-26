@@ -35,8 +35,8 @@ const main = async (): Promise<void> => {
   console.error('A11y Accessibility MCP server running on stdio');
 }
 
-process.on('SIGINT', async () => {
-  await server.close();
+process.on('SIGINT', (): void => {
+  void server.close();
   process.exit(0);
 });
 
