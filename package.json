@@ -1,8 +1,9 @@
 {
   "name": "a11y-test-mcp",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "build/index.js",
   "scripts": {
+    "postinstall": "npx -y playwright install",
     "build": "tsc && chmod 755 build/index.js",
     "start": "node build/index.js",
     "lint": "eslint .",
