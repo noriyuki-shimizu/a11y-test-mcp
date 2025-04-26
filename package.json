@@ -18,7 +18,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:noriyuki-shimizu/a11y-test-mcp.git"
+    "url": "https://github.com/noriyuki-shimizu/a11y-test-mcp.git"
   },
   "author": "Noriyuki Shimizu",
   "license": "ISC",
