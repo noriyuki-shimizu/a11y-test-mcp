@@ -1,0 +1,5 @@
+.github/
+.vscode/
+.node-version
+.npmrc
+.DS_Store
