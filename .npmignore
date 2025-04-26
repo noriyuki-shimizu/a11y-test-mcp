@@ -3,3 +3,4 @@
 .node-version
 .npmrc
 .DS_Store
+src/
