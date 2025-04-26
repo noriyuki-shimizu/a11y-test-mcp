@@ -18,5 +18,5 @@ export default tseslint.config(
   tseslint.configs.recommendedTypeChecked,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
-  globalIgnores(["*.mjs", "*.cjs"]),
+  globalIgnores(["**/*.mjs", "**/*.cjs", "**/*.js"]),
 );
