@@ -1,0 +1,32 @@
+{
+  "name": "a11y-test-mcp",
+  "version": "1.0.0",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc && chmod 755 build/index.js",
+    "start": "node build/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "playwright"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "volta": {
+    "node": "22.15.0",
+    "npm": "10.9.2"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.1",
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "@types/node": "^22.14.1",
+    "playwright": "^1.52.0",
+    "typescript": "^5.8.3",
+    "zod": "^3.24.3"
+  },
+  "files": [
+    "build"
+  ],
+  "description": ""
+}
