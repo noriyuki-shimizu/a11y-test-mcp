@@ -6,27 +6,43 @@
     "build": "tsc && chmod 755 build/index.js",
     "start": "node build/index.js"
   },
+  "bin": {
+    "a11y-mcp": "build/index.js"
+  },
   "keywords": [
+    "accessibility",
+    "a11y",
     "mcp",
-    "playwright"
+    "playwright",
+    "axe-core"
   ],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:noriyuki-shimizu/a11y-test-mcp.git"
+  },
+  "author": "Noriyuki Shimizu",
   "license": "ISC",
   "type": "commonjs",
-  "volta": {
-    "node": "22.15.0",
-    "npm": "10.9.2"
-  },
-  "dependencies": {
-    "@axe-core/playwright": "^4.10.1",
-    "@modelcontextprotocol/sdk": "^1.10.2",
-    "@types/node": "^22.14.1",
-    "playwright": "^1.52.0",
-    "typescript": "^5.8.3",
-    "zod": "^3.24.3"
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "build"
   ],
-  "description": ""
+  "description": "",
+  "homepage": "https://github.com/noriyuki-shimizu/a11y-test-mcp/blob/main/README.md",
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.1",
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "playwright": "^1.52.0",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "typescript": "^5.8.3"
+  },
+  "volta": {
+    "node": "22.15.0",
+    "npm": "10.9.2"
+  }
 }
