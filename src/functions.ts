@@ -63,11 +63,7 @@ export const execTest = async (urls: string[], wcagStandards: string[] | undefin
           ? convertWcagTag(wcagStandards)
           : ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
-        if (tagsToUse.length > 0) {
-          axeBuilder.withTags(tagsToUse);
-        } else {
-          console.warn("No valid WCAG tags specified, running Axe with default rules.");
-        }
+        axeBuilder.withTags(tagsToUse);
 
         const axeResults = await axeBuilder.analyze();
 
@@ -89,7 +85,7 @@ export const execTest = async (urls: string[], wcagStandards: string[] | undefin
           inapplicableCount: axeResults.inapplicable.length,
         });
 
-      } catch (error: unknown) {
+      } catch (error) {
         results.push({
           url: url,
           error: `Failed to test: ${error instanceof Error ? error.message : String(error)}`,
