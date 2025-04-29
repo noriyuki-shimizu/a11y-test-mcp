@@ -1,4 +1,5 @@
 import playwright from 'playwright';
+import type { Page } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
 import type { ViolationSummary, AccessibilityTestOutput } from './types'
 
@@ -49,19 +50,18 @@ export const execTest = async (urls: string[], wcagStandards: string[] | undefin
   const results: AccessibilityTestOutput[] = [];
   const browser = await playwright.chromium.launch();
   const context = await browser.newContext();
+  const tagsToUse = (wcagStandards && wcagStandards.length > 0)
+    ? convertWcagTag(wcagStandards)
+    : ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
   try {
     for (const url of urls) {
-      let page;
+      let page: Page | null = null;
       try {
         page = await context.newPage();
         await page.goto(url, { waitUntil: 'networkidle' });
 
         const axeBuilder = new AxeBuilder({ page });
-
-        const tagsToUse = (wcagStandards && wcagStandards.length > 0)
-          ? convertWcagTag(wcagStandards)
-          : ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
         axeBuilder.withTags(tagsToUse);
 
@@ -91,7 +91,7 @@ export const execTest = async (urls: string[], wcagStandards: string[] | undefin
           error: `Failed to test: ${error instanceof Error ? error.message : String(error)}`,
         });
       } finally {
-        if (page) {
+        if (page !== null) {
           await page.close();
         }
       }
