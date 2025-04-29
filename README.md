@@ -10,7 +10,7 @@ An MCP (Model Context Protocol) server for performing a11y test on webpages usin
   * Passes
   * Incomplete
   * Inapplicable
-* Can specify specific WCAG criteria
+* Can specify specific WCAG criteria（Default WCAG 2.0 level A, WCAG 2.0 level AA, WCAG 2.1 level A, WCAG 2.1 level AA）
 
 ## Installation
 
