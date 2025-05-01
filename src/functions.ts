@@ -2,6 +2,7 @@ import playwright from 'playwright';
 import type { Page } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
 import type { ViolationSummary, AccessibilityTestOutput } from './types'
+import { WCAG_TAG_MAP, ALLOWED_PREFIXES_OR_TAGS, DEFAULT_WCAG_TAGS } from './constants'
 
 /**
  * Enhance WCAG tag conversion
@@ -11,34 +12,33 @@ import type { ViolationSummary, AccessibilityTestOutput } from './types'
 const convertWcagTag = (tags: string[]): string[] => {
   return tags.map(tag => {
     const lowerTag = tag.toLowerCase().replace(/[\s.]/g, '');
-    switch (lowerTag) {
-      case 'wcag2a':
-      case 'a':
-      case 'wcag20a':
-        return 'wcag2a';
-      case 'wcag2aa':
-      case 'aa':
-      case 'wcag20aa':
-        return 'wcag2aa';
-      case 'wcag21a':
-        return 'wcag21a';
-      case 'wcag21aa':
-        return 'wcag21aa';
-      case 'wcag22a':
-        return 'wcag22a';
-      case 'wcag22aa':
-        return 'wcag22aa';
-      default:
-        if (lowerTag.startsWith('wcag') || ['best-practice', 'section508'].includes(lowerTag)) {
-          return lowerTag;
-        }
-        console.warn(`Unrecognized WCAG tag: ${tag}`);
-        return '';
+
+    if (lowerTag in WCAG_TAG_MAP) {
+      return WCAG_TAG_MAP[lowerTag];
     }
-  }).filter(tag => {
-    return tag !== '';
-  });
+
+    if (ALLOWED_PREFIXES_OR_TAGS.some(prefixOrTag => lowerTag.startsWith(prefixOrTag) || lowerTag === prefixOrTag)) {
+      return lowerTag;
+    }
+
+    console.warn(`Unrecognized WCAG tag: ${tag}`);
+    return '';
+  }).filter(tag => tag !== '');
 }
+
+/**
+ * Formats a single accessibility violation into a human-readable string.
+ * Includes impact level, ID, description, node count, help URL, and details of each affected node.
+ * @param {ViolationSummary} v - The violation summary object containing details about the violation.
+ * @returns {string} A formatted string representing the violation, suitable for display in reports or logs.
+ */
+const formatViolation = (v: ViolationSummary): string => {
+  const violationHeader = `    - [${String(v.impact?.toUpperCase() ?? 'N/A')}] ${v.id}: ${v.description} (Nodes: ${String(v.nodes.length)}, Help: ${v.helpUrl})`;
+  const violationNodes = v.nodes
+    .map((node, index) => `      Node ${String(index + 1)}: ${node.html}`)
+    .join('\n');
+  return `${violationHeader}\n${violationNodes}`;
+};
 
 /**
  * Execute a11y test
@@ -47,15 +47,14 @@ const convertWcagTag = (tags: string[]): string[] => {
  * @returns {AccessibilityTestOutput[]} - Results of the accessibility tests
  */
 export const execTest = async (urls: string[], wcagStandards: string[] | undefined): Promise<AccessibilityTestOutput[]> => {
-  const results: AccessibilityTestOutput[] = [];
   const browser = await playwright.chromium.launch();
   const context = await browser.newContext();
   const tagsToUse = (wcagStandards && wcagStandards.length > 0)
     ? convertWcagTag(wcagStandards)
-    : ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
+    : DEFAULT_WCAG_TAGS;
 
   try {
-    for (const url of urls) {
+    const results: AccessibilityTestOutput[] = await Promise.all(urls.map(async (url) => {
       let page: Page | null = null;
       try {
         page = await context.newPage();
@@ -67,40 +66,36 @@ export const execTest = async (urls: string[], wcagStandards: string[] | undefin
 
         const axeResults = await axeBuilder.analyze();
 
-        // Summarize results, handling null impact
         const summarizedViolations: ViolationSummary[] = axeResults.violations.map(v => ({
           id: v.id,
-          // Handle null impact from axe-core
           impact: v.impact === null ? undefined : v.impact,
           description: v.description,
           helpUrl: v.helpUrl,
           nodes: v.nodes
         }));
 
-        results.push({
+        return {
           url: url,
           violations: summarizedViolations,
           passesCount: axeResults.passes.length,
           incompleteCount: axeResults.incomplete.length,
           inapplicableCount: axeResults.inapplicable.length,
-        });
-
+        };
       } catch (error) {
-        results.push({
+        return {
           url: url,
           error: `Failed to test: ${error instanceof Error ? error.message : String(error)}`,
-        });
+        };
       } finally {
         if (page !== null) {
           await page.close();
         }
       }
-    }
+    }))
+    return results
   } finally {
     await browser.close();
   }
-
-  return results;
 }
 
 /**
@@ -109,35 +104,25 @@ export const execTest = async (urls: string[], wcagStandards: string[] | undefin
  * @returns {string} - Text representation of the results
  */
 export const convertTestResultToText = (structuredResults: AccessibilityTestOutput[]): string => {
-  return structuredResults
-    .map((result) => {
-      const resultTextList: string[] = [`URL: ${result.url}`]
-      if (result.error) {
-        resultTextList.push(`  Error: ${result.error}`);
-      } else {
-        resultTextList.push(`  Violations: ${String(result.violations?.length ?? 0)}`);
+  let outputText = '';
+  for (const result of structuredResults) {
+    let resultText = `URL: ${result.url}\n`;
+    if (result.error) {
+      resultText += `  Error: ${result.error}\n`;
+    } else {
+      resultText += `  Violations: ${String(result.violations?.length ?? 0)}\n`;
 
-        const resultViolationText = result.violations?.map((v) => {
-          return [
-            `    - [${String(v.impact?.toUpperCase() ?? 'N/A')}] ${v.id}: ${v.description} (Nodes: ${String(v.nodes.length)}, Help: ${v.helpUrl})`,
-            v.nodes
-            .map((node, index) => {
-              return `      Node ${String(index + 1)}: ${node.html}`
-            })
-            .join('\n')
-          ].join('\n');
-        });
-
-        if (resultViolationText !== undefined) {
-          resultTextList.push(...resultViolationText);
+      if (result.violations && result.violations.length > 0) {
+        for (const violation of result.violations) {
+          resultText += `${formatViolation(violation)}\n`;
         }
-
-        resultTextList.push(`  Passes: ${String(result.passesCount ?? 0)}`);
-        resultTextList.push(`  Incomplete: ${String(result.incompleteCount ?? 0)}`);
-        resultTextList.push(`  Inapplicable: ${String(result.inapplicableCount ?? 0)}`);
       }
-      return resultTextList.join('\n');
-    })
-    .join('\n')
-    .trim();
+
+      resultText += `  Passes: ${String(result.passesCount ?? 0)}\n`;
+      resultText += `  Incomplete: ${String(result.incompleteCount ?? 0)}\n`;
+      resultText += `  Inapplicable: ${String(result.inapplicableCount ?? 0)}\n`;
+    }
+    outputText += resultText + '\n';
+  }
+  return outputText.trim();
 }
