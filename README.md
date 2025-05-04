@@ -1,16 +1,17 @@
 # a11y test MCP
+
 An MCP (Model Context Protocol) server for performing a11y test on webpages using playwright axe-core. The results are then used in an agent loop with your favorite AI assistant (Cline/Cursor/GH Copilot) to find problems with a11y and suggest improvements.
 
 ## Features
 
-* Perform detailed accessibility testing on any web pages
-* Get an overview of accessibility issues
-  * Violations
-    * Provides information on which DOM was at fault
-  * Passes
-  * Incomplete
-  * Inapplicable
-* Can specify specific WCAG criteria（Default WCAG 2.0 level A, WCAG 2.0 level AA, WCAG 2.1 level A, WCAG 2.1 level AA）
+- Perform detailed accessibility testing on any web pages
+- Get an overview of accessibility issues
+  - Violations
+    - Provides information on which DOM was at fault
+  - Passes
+  - Incomplete
+  - Inapplicable
+- Can specify specific WCAG criteria（Default WCAG 2.0 level A, WCAG 2.0 level AA, WCAG 2.1 level A, WCAG 2.1 level AA）
 
 ## Installation
 

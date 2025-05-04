@@ -17,4 +17,4 @@ export const WCAG_TAG_MAP: Record<string, string> = {
 export const ALLOWED_PREFIXES_OR_TAGS: string[] = ['wcag', 'best-practice', 'section508'];
 
 /** default WCAG tags */
-export const DEFAULT_WCAG_TAGS: string[] = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
+export const DEFAULT_WCAG_TAGS: string[] = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
