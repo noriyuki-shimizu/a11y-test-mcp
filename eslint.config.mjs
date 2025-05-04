@@ -7,16 +7,22 @@ import { globalIgnores } from "eslint/config"
 export default tseslint.config(
   gitignore(),
   eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parserOptions: {
-        project: './tsconfig.json',
+        project: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    // Custom rules for TypeScript
+    rules: {
+      "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    },
   },
-  tseslint.configs.recommendedTypeChecked,
-  tseslint.configs.strictTypeChecked,
-  tseslint.configs.stylisticTypeChecked,
   globalIgnores(["**/*.mjs", "**/*.cjs", "**/*.js"]),
 );
