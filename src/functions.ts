@@ -1,8 +1,8 @@
+import AxeBuilder from '@axe-core/playwright';
+import type { NodeResult } from 'axe-core';
 import { chromium } from 'playwright';
 import type { Page } from 'playwright';
-import AxeBuilder from '@axe-core/playwright';
-import { WCAG_TAG_MAP, ALLOWED_PREFIXES_OR_TAGS, DEFAULT_WCAG_TAGS } from './constants'
-import type { NodeResult } from 'axe-core';
+import { ALLOWED_PREFIXES_OR_TAGS, DEFAULT_WCAG_TAGS, WCAG_TAG_MAP } from './constants';
 
 export interface ViolationSummary {
   id: string;
@@ -42,7 +42,7 @@ const convertWcagTag = (tags: string[]): string[] => {
     console.warn(`Unrecognized WCAG tag: ${tag}`);
     return '';
   }).filter(tag => tag !== '');
-}
+};
 
 /**
  * Formats a single accessibility violation into a human-readable string.
@@ -51,7 +51,9 @@ const convertWcagTag = (tags: string[]): string[] => {
  * @returns {string} A formatted string representing the violation, suitable for display in reports or logs.
  */
 const formatViolation = (v: ViolationSummary): string => {
-  const violationHeader = `    - [${String(v.impact?.toUpperCase() ?? 'N/A')}] ${v.id}: ${v.description} (Nodes: ${String(v.nodes.length)}, Help: ${v.helpUrl})`;
+  const violationHeader = `    - [${String(v.impact?.toUpperCase() ?? 'N/A')}] ${v.id}: ${v.description} (Nodes: ${
+    String(v.nodes.length)
+  }, Help: ${v.helpUrl})`;
   const violationNodes = v.nodes
     .map((node, index) => `      Node ${String(index + 1)}: ${node.html}`)
     .join('\n');
@@ -64,7 +66,10 @@ const formatViolation = (v: ViolationSummary): string => {
  * @param {string[] | undefined} wcagStandards - WCAG standards to apply
  * @returns {AccessibilityTestOutput[]} - Results of the accessibility tests
  */
-export const execTest = async (urls: string[], wcagStandards: string[] | undefined): Promise<AccessibilityTestOutput[]> => {
+export const execTest = async (
+  urls: string[],
+  wcagStandards: string[] | undefined,
+): Promise<AccessibilityTestOutput[]> => {
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const tagsToUse = (wcagStandards && wcagStandards.length > 0)
@@ -89,7 +94,7 @@ export const execTest = async (urls: string[], wcagStandards: string[] | undefin
           impact: v.impact === null ? undefined : v.impact,
           description: v.description,
           helpUrl: v.helpUrl,
-          nodes: v.nodes
+          nodes: v.nodes,
         }));
 
         return {
@@ -109,12 +114,12 @@ export const execTest = async (urls: string[], wcagStandards: string[] | undefin
           await page.close();
         }
       }
-    }))
-    return results
+    }));
+    return results;
   } finally {
     await browser.close();
   }
-}
+};
 
 /**
  * Convert structured results to text format
@@ -143,4 +148,4 @@ export const convertTestResultToText = (structuredResults: AccessibilityTestOutp
     outputText += resultText + '\n';
   }
   return outputText.trim();
-}
+};

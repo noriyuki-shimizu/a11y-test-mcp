@@ -1,9 +1,11 @@
-name: Publish Package to npmjs
+name: Execute linter
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 jobs:
-  npm-publish:
+  npm-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -12,7 +14,4 @@ jobs:
           node-version: "22.15.0"
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
-      - run: npm run build
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm run lint
