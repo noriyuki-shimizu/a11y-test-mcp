@@ -8,8 +8,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "declaration": true
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules", "build"],
 }
