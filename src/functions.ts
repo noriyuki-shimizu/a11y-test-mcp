@@ -1,8 +1,26 @@
-import playwright from 'playwright';
+import { chromium } from 'playwright';
 import type { Page } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-import type { ViolationSummary, AccessibilityTestOutput } from './types'
 import { WCAG_TAG_MAP, ALLOWED_PREFIXES_OR_TAGS, DEFAULT_WCAG_TAGS } from './constants'
+import type { NodeResult } from 'axe-core';
+
+export interface ViolationSummary {
+  id: string;
+  impact?: 'minor' | 'moderate' | 'serious' | 'critical';
+  description: string;
+  helpUrl: string;
+  nodes: NodeResult[];
+}
+
+/** Update the main output structure */
+export interface AccessibilityTestOutput {
+  url: string;
+  violations?: ViolationSummary[];
+  passesCount?: number;
+  incompleteCount?: number;
+  inapplicableCount?: number;
+  error?: string;
+}
 
 /**
  * Enhance WCAG tag conversion
@@ -47,7 +65,7 @@ const formatViolation = (v: ViolationSummary): string => {
  * @returns {AccessibilityTestOutput[]} - Results of the accessibility tests
  */
 export const execTest = async (urls: string[], wcagStandards: string[] | undefined): Promise<AccessibilityTestOutput[]> => {
-  const browser = await playwright.chromium.launch();
+  const browser = await chromium.launch();
   const context = await browser.newContext();
   const tagsToUse = (wcagStandards && wcagStandards.length > 0)
     ? convertWcagTag(wcagStandards)
