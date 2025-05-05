@@ -1,4 +1,6 @@
 {
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "dprint.dprint",
   "eslint.validate": [
     "javascript",
     "typescript"
