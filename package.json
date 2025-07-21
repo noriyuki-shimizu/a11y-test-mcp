@@ -4,7 +4,7 @@
   "main": "build/index.js",
   "scripts": {
     "postinstall": "npx -y playwright install",
-    "build": "tsc && chmod 755 build/index.js",
+    "build": "tsgo && chmod 755 build/index.js",
     "start": "node build/index.js",
     "lint": "npm run lint:e && npm run lint:d",
     "lint:e": "eslint .",
@@ -45,6 +45,7 @@
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "@types/node": "^22.15.2",
+    "@typescript/native-preview": "^7.0.0-dev.20250523.1",
     "dprint": "^0.49.1",
     "eslint": "^9.25.1",
     "eslint-config-flat-gitignore": "^2.1.0",
