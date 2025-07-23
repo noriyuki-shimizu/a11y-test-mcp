@@ -4,7 +4,8 @@
   "main": "build/index.js",
   "scripts": {
     "postinstall": "npx -y playwright install",
-    "build": "tsgo && chmod 755 build/index.js",
+    "build": "tsc && chmod 755 build/index.js",
+    "build:tsgo": "tsgo && chmod 755 build/index.js",
     "start": "node build/index.js",
     "lint": "npm run lint:e && npm run lint:d",
     "lint:e": "eslint .",
