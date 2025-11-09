@@ -10,10 +10,13 @@ const server = new McpServer({
   version: '0.1.1',
 });
 
-server.tool(
+server.registerTool(
   'exec-a11y-test',
-  'Obtains a list of specified list of URL and a list of WCAG indicators and returns the results',
-  { urls: z.array(z.string().url()), wcagStandards: z.array(z.string()).optional() },
+  {
+    title: 'Execute Accessibility Test',
+    description: 'Obtains a list of specified list of URL and a list of WCAG indicators and returns the results',
+    inputSchema: { urls: z.array(z.string().url()), wcagStandards: z.array(z.string()).optional() },
+  },
   async ({ urls, wcagStandards }) => {
     const structuredResults = await execTest(urls, wcagStandards);
 

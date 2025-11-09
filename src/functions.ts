@@ -51,11 +51,11 @@ const convertWcagTag = (tags: string[]): string[] => {
  * @returns {string} A formatted string representing the violation, suitable for display in reports or logs.
  */
 const formatViolation = (v: ViolationSummary): string => {
-  const violationHeader = `    - [${String(v.impact?.toUpperCase() ?? 'N/A')}] ${v.id}: ${v.description} (Nodes: ${
-    String(v.nodes.length)
-  }, Help: ${v.helpUrl})`;
+  const violationHeader = `    - [${
+    v.impact?.toUpperCase() ?? 'N/A'
+  }] ${v.id}: ${v.description} (Nodes: ${v.nodes.length.toString()}, Help: ${v.helpUrl})`;
   const violationNodes = v.nodes
-    .map((node, index) => `      Node ${String(index + 1)}: ${node.html}`)
+    .map((node, index) => `      Node ${(index + 1).toString()}: ${node.html}`)
     .join('\n');
   return `${violationHeader}\n${violationNodes}`;
 };
