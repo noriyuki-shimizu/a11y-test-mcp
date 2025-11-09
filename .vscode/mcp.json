@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "debug-exec-a11y-test": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/Users/no_shimizu/my-workspace/a11y-test-mcp/build/index.js"]
+    }
+  },
+  "inputs": []
+}
