@@ -1,0 +1,6 @@
+node = "22.21.1"
+npm = "10.9.4"
+
+[settings]
+auto-install = true
+auto-clean = true
