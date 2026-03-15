@@ -15,7 +15,7 @@ server.registerTool(
   {
     title: 'Execute Accessibility Test',
     description: 'Obtains a list of specified list of URL and a list of WCAG indicators and returns the results',
-    inputSchema: { urls: z.array(z.string().url()), wcagStandards: z.array(z.string()).optional() },
+    inputSchema: { urls: z.array(z.url()), wcagStandards: z.array(z.string()).optional() },
   },
   async ({ urls, wcagStandards }) => {
     const structuredResults = await execTest(urls, wcagStandards);
