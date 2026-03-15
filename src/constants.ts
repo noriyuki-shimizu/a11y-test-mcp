@@ -6,10 +6,15 @@ export const WCAG_TAG_MAP: Record<string, string> = {
   'aa': 'wcag2aa',
   'wcag20aa': 'wcag2aa',
   'wcag2aa': 'wcag2aa',
+  'aaa': 'wcag2aaa',
+  'wcag20aaa': 'wcag2aaa',
+  'wcag2aaa': 'wcag2aaa',
   'wcag21a': 'wcag21a',
   'wcag21aa': 'wcag21aa',
+  'wcag21aaa': 'wcag21aaa',
   'wcag22a': 'wcag22a',
   'wcag22aa': 'wcag22aa',
+  'wcag22aaa': 'wcag22aaa',
   // Add other known tags or aliases here
 };
 
