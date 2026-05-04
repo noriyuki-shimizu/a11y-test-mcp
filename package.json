@@ -51,6 +51,7 @@
   "dependencies": {
     "@axe-core/playwright": "^4.11.1",
     "@modelcontextprotocol/sdk": "^1.27.1",
+    "axe-core": "^4.11.4",
     "playwright": "^1.58.2",
     "zod": "^4.3.6"
   },
