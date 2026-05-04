@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "main": "build/index.js",
   "scripts": {
-    "postinstall": "pnpm exec playwright install",
+    "postinstall": "npx -y playwright install",
     "build": "tsc && chmod 755 build/index.js",
     "build:tsgo": "tsgo && chmod 755 build/index.js",
     "start": "node build/index.js",
