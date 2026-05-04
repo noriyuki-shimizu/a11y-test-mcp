@@ -69,9 +69,13 @@ jobs:
 
       - name: Create dummy user on Verdaccio
         run: |
+          # npm-cli-login は $HOME/.npmrc に書き込むが、setup-node が
+          # NPM_CONFIG_USERCONFIG を別ファイルに向けているため、pnpm publish
+          # からは見えない。発行された authToken をそちらにも反映する。
           npx --yes npm-cli-login \
             -u ci -p ci-password -e ci@example.com \
             -r http://localhost:4873
+          grep '//localhost:4873/' "$HOME/.npmrc" >> "$NPM_CONFIG_USERCONFIG"
 
       - name: Publish to Verdaccio (real publish, isolated)
         run: pnpm publish --registry http://localhost:4873 --no-git-checks
