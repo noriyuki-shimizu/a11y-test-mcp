@@ -2,7 +2,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { convertTestResultToText, execTest } from './functions';
+import { convertTestResultToText, convertWcagTag, execTest } from './functions';
+import { convertScenarioResultToText, execScenario, ScenarioInputSchema } from './scenario';
 
 /** Create an MCP server instance */
 const server = new McpServer({
@@ -24,6 +25,27 @@ server.registerTool(
       content: [{
         type: 'text',
         text: convertTestResultToText(structuredResults),
+      }],
+    };
+  },
+);
+
+server.registerTool(
+  'exec-a11y-test-scenario',
+  {
+    title: 'Execute Accessibility Test Scenario',
+    description:
+      'Run a multi-step browser scenario (navigation, click, fill, etc.) and execute one or more accessibility audits at chosen points.'
+      + 'Useful for authenticated pages, modal/menu open states, SPA route transitions, and any UI state not reachable from a single URL.'
+      + 'Framework-agnostic: works with any rendered DOM (Vue/React/Svelte/Angular/Lit/plain HTML/Web Components).',
+    inputSchema: ScenarioInputSchema.shape,
+  },
+  async (input) => {
+    const result = await execScenario(input, convertWcagTag);
+    return {
+      content: [{
+        type: 'text',
+        text: convertScenarioResultToText(result),
       }],
     };
   },

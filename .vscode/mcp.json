@@ -3,8 +3,15 @@
     "debug-exec-a11y-test": {
       "type": "stdio",
       "command": "node",
-      "args": ["${workspaceFolder}/build/index.js"]
+      "args": ["${workspaceFolder}/build/index.js"],
+      "env": {
+        "TEST_USER": "${input:testUser}",
+        "TEST_PASSWORD": "${input:testPassword}",
+      }
     }
   },
-  "inputs": []
+  "inputs": [
+    { "id": "testUser", "type": "promptString", "description": "Test user email" },
+    { "id": "testPassword", "type": "promptString", "password": true, "description": "Test user password" }
+  ]
 }

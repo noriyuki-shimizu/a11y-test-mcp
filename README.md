@@ -9,9 +9,11 @@ An MCP (Model Context Protocol) server for performing a11y test on webpages usin
   - Violations
     - Provides information on which DOM was at fault
   - Passes
-  - Incomplete
+  - Incomplete (with full per-node details, not just a count)
   - Inapplicable
 - Can specify specific WCAG criteria（Default WCAG 2.0 level A, WCAG 2.0 level AA, WCAG 2.1 level A, WCAG 2.1 level AA）
+- WCAG levels are **expanded cumulatively**: e.g. requesting `wcag22aa` automatically also evaluates `wcag2a` / `wcag2aa` / `wcag21a` / `wcag21aa` / `wcag22a`, matching the conventional meaning of “WCAG 2.2 AA”. (axe-core tags themselves act as filters, so passing only `wcag22aa` would otherwise evaluate just the rules new to WCAG 2.2.)
+- Audits warn when too few rules were evaluated (a common symptom of running axe before the SPA has finished rendering)
 
 ## Installation
 
@@ -48,6 +50,141 @@ If there are problems, please indicate which HTML elements are at fault.
 
 * https://example.com
 * https://example.com/home
+```
+
+## Scenario mode (multi-step audits)
+
+In addition to the single-URL `exec-a11y-test` tool, this server exposes
+`exec-a11y-test-scenario` for **multi-step browser scenarios**. It lets you
+test pages that require login, modal/menu open states, SPA route transitions,
+or any UI state not reachable from a plain URL.
+
+The scenario engine is built on top of Playwright and runs against the rendered
+DOM, so it works with **any framework** (Vue / React / Svelte / Angular / Lit /
+plain HTML / Web Components / SSR / SSG / CSR — all the same).
+
+### Tool input shape
+
+```jsonc
+{
+  "name": "Login then audit dashboard",
+  "defaultWcagStandards": ["wcag2aa"],
+  "globalTimeoutMs": 60000,
+  "steps": [
+    { "type": "goto", "url": "https://example.com/login" },
+    { "type": "fill", "selector": "#email", "value": "${env:TEST_USER}" },
+    { "type": "fill", "selector": "#password", "value": "${env:TEST_PASSWORD}" },
+    { "type": "click", "selector": "button[type=submit]" },
+    { "type": "waitForUrl", "url": "**/dashboard" },
+    { "type": "audit", "name": "dashboard-initial" },
+    { "type": "click", "selector": "button[aria-label='Open menu']" },
+    { "type": "waitFor", "selector": "[role=dialog]" },
+    { "type": "audit", "name": "dashboard-menu-open", "wcagStandards": ["wcag2aa", "wcag22aa"] }
+  ]
+}
+```
+
+### Supported steps
+
+| Step `type`          | Required fields     | Notes                                                                                                                                                                                                                                                                                                           |
+| -------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `goto`               | `url`               | Navigates to URL. Optional `waitUntil` (`load` / `domcontentloaded` / `networkidle` / `commit`).                                                                                                                                                                                                                |
+| `click`              | `selector`          | Playwright selectors (CSS, `role=`, `text=`, `data-testid` etc.)                                                                                                                                                                                                                                                |
+| `fill`               | `selector`, `value` | `value` supports `${env:VAR_NAME}` placeholder for secrets.                                                                                                                                                                                                                                                     |
+| `select`             | `selector`, `value` | `value` may be a string or array of strings.                                                                                                                                                                                                                                                                    |
+| `press`              | `key`               | Optional `selector` to focus first; otherwise sent on `page.keyboard`.                                                                                                                                                                                                                                          |
+| `hover`              | `selector`          |                                                                                                                                                                                                                                                                                                                 |
+| `waitFor`            | (none)              | Optional `selector` + `state` (`attached` / `detached` / `visible` / `hidden`). **Default state is `attached`** so SPA elements rendered off-screen or behind overlays don't time out; pass `state: "visible"` explicitly when strict visibility is required. Without a selector, waits for `domcontentloaded`. |
+| `waitForUrl`         | `url`               | Glob / regex / string supported by Playwright.                                                                                                                                                                                                                                                                  |
+| `waitForNetworkIdle` | (none)              | `page.waitForLoadState('networkidle')`                                                                                                                                                                                                                                                                          |
+| `audit`              | (none)              | Runs axe-core on the current page state. Optional `name` and `wcagStandards`.                                                                                                                                                                                                                                   |
+
+Every step also accepts:
+
+- `label`: human-readable label shown in step log.
+- `timeout`: per-step timeout in ms (default 30 000, max 120 000).
+- `frame`: `{ selector?: "iframe[name=foo]", url?: "https://..." }` to scope the action inside an iframe.
+
+### Security guards
+
+- **No script eval**: there is no `eval` step. The DSL only exposes a fixed set of browser actions.
+- **Secret placeholders only**: values are templated via `${env:VAR_NAME}` and read from `process.env`. Arbitrary expressions are not evaluated.
+- **URL allowlist (optional)**: set the `A11Y_ALLOWED_ORIGINS` environment variable to a comma-separated list of URL prefixes (e.g. `https://example.com,https://*.staging.example.com`). When set, `goto` URLs not matching any prefix are rejected. Unset = no restriction.
+- **Hard caps**: maximum 100 steps per scenario, 600 000 ms global timeout, 120 000 ms per-step timeout.
+- **No filesystem / network side-effects**: the scenario runner does not write files or intercept requests.
+
+### Example: passing username & password as secrets
+
+Both username and password can be injected via environment variables — neither
+needs to appear in your scenario JSON or in chat history.
+
+#### 1. Configure the MCP server with env vars
+
+In `.vscode/mcp.json`, declare the env vars and (optionally) prompt the user
+for them at server startup using VS Code `inputs`:
+
+```jsonc
+{
+  "servers": {
+    "a11y-test": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["a11y-test-mcp"],
+      "env": {
+        "TEST_USER": "${input:testUser}",
+        "TEST_PASSWORD": "${input:testPassword}",
+        "A11Y_ALLOWED_ORIGINS": "https://staging.example.com"
+      }
+    }
+  },
+  "inputs": [
+    { "id": "testUser", "type": "promptString", "description": "Test user email" },
+    { "id": "testPassword", "type": "promptString", "password": true, "description": "Test user password" }
+  ]
+}
+```
+
+Alternatively, export them in your shell before launching VS Code:
+
+```bash
+export TEST_USER='qa@example.com'
+export TEST_PASSWORD='...'
+```
+
+> ⚠️ Do **not** commit raw credentials into `.vscode/mcp.json`. Use `${input:...}`
+> or read from your shell environment (`"TEST_USER": "${env:TEST_USER}"`).
+
+#### 2. Reference them in scenario steps
+
+```jsonc
+{
+  "name": "Login then audit dashboard",
+  "defaultWcagStandards": ["wcag2aa"],
+  "steps": [
+    { "type": "goto", "url": "https://staging.example.com/login" },
+    { "type": "fill", "selector": "#email", "value": "${env:TEST_USER}" },
+    { "type": "fill", "selector": "#password", "value": "${env:TEST_PASSWORD}" },
+    { "type": "click", "selector": "button[type=submit]" },
+    { "type": "waitForUrl", "url": "**/dashboard" },
+    { "type": "audit", "name": "dashboard-initial" }
+  ]
+}
+```
+
+The scenario runner replaces `${env:VAR_NAME}` with `process.env.VAR_NAME` at
+execution time. Only the literal placeholder syntax `${env:[A-Z0-9_]+}` is
+resolved — arbitrary expressions are never evaluated. Step logs do **not**
+record the resolved value.
+
+### Example prompt for scenario mode
+
+```
+Please log in to https://staging.example.com and audit the dashboard at
+WCAG 2.2 AA. Use the credentials stored in the environment variables
+TEST_USER and TEST_PASSWORD — refer to them as ${env:TEST_USER} and
+${env:TEST_PASSWORD} in the scenario steps; do not embed the raw values
+directly. After the initial dashboard audit, open the user menu and run a
+separate audit on that state.
 ```
 
 ## Release Operations (for maintainers)

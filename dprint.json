@@ -20,7 +20,7 @@
   "yaml": {
   },
   "includes": ["*.{ts,json,md,yml}"],
-  "excludes": ["build", "**/node_modules", "**/*-lock.json"],
+  "excludes": ["build", "**/node_modules", "**/*-lock.json", ".playwright-mcp", "performance-reports"],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.95.0.wasm",
     "https://plugins.dprint.dev/json-0.20.0.wasm",
