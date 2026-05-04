@@ -17,10 +17,10 @@ An MCP (Model Context Protocol) server for performing a11y test on webpages usin
 
 ```
 # Global install
-npm install -g a11y-test-mcp
+pnpm add -g a11y-test-mcp
 
-# With npx command
-npx a11y-test-mcp
+# With pnpm dlx command
+pnpm dlx a11y-test-mcp
 ```
 
 ## Configuration
