@@ -6,7 +6,7 @@
       "args": ["${workspaceFolder}/build/index.js"],
       "env": {
         "TEST_USER": "${input:testUser}",
-        "TEST_PASSWORD": "${input:testPassword}",
+        "TEST_PASSWORD": "${input:testPassword}"
       }
     }
   },
