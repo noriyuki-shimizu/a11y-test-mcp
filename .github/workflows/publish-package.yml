@@ -2,19 +2,117 @@ name: Publish Package to npmjs
 on:
   release:
     types: [published]
+
 jobs:
-  npm-publish:
+  verify:
+    name: Pre-publish verification
     runs-on: ubuntu-latest
+    services:
+      verdaccio:
+        image: verdaccio/verdaccio:5
+        ports:
+          - 4873:4873
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10.15.0
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22.15.0"
           registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Verify git tag matches package.json version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "package.json: $PKG_VERSION / git tag: $TAG_VERSION"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::package.json の version ($PKG_VERSION) と Release タグ ($TAG_VERSION) が一致しません"
+            exit 1
+          fi
+
+      - name: Inspect package contents
+        run: npm pack --dry-run
+
+      - name: pnpm publish (dry-run against npmjs)
+        run: pnpm publish --dry-run --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Wait for Verdaccio to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4873/-/ping > /dev/null; then
+              echo "Verdaccio is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Verdaccio did not become ready in time"
+          exit 1
+
+      - name: Create dummy user on Verdaccio
+        run: |
+          npx --yes npm-cli-login \
+            -u ci -p ci -e ci@example.com \
+            -r http://localhost:4873
+
+      - name: Publish to Verdaccio (real publish, isolated)
+        run: pnpm publish --registry http://localhost:4873 --no-git-checks
+
+      - name: Smoke test (install from Verdaccio + CLI launch)
+        env:
+          # Playwright のブラウザ DL を smoke test ではスキップして CI 時間を抑える
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: |
+          mkdir -p /tmp/install-test && cd /tmp/install-test
+          npm init -y > /dev/null
+          npm install a11y-test-mcp --registry http://localhost:4873
+          # MCP server は stdin 待ちで常駐するため、起動できることだけ確認（タイムアウトは正常扱い）
+          set +e
+          timeout 5 npx a11y-test-mcp
+          code=$?
+          set -e
+          # 0 = 正常終了 / 124 = timeout（=起動成功）
+          if [ "$code" != "0" ] && [ "$code" != "124" ]; then
+            echo "::error::CLI smoke test failed with exit code $code"
+            exit 1
+          fi
+          echo "Smoke test OK (exit=$code)"
+
+  publish:
+    name: Publish to npm
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.15.0"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
       - run: pnpm publish --no-git-checks

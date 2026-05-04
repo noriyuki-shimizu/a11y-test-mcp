@@ -11,7 +11,8 @@
     "lint": "pnpm run lint:e && pnpm run lint:d",
     "lint:e": "eslint .",
     "lint:d": "dprint check",
-    "format": "dprint fmt"
+    "format": "dprint fmt",
+    "release:check": "pnpm install --frozen-lockfile && pnpm run lint && pnpm run typecheck && pnpm run build && npm pack --dry-run && pnpm publish --dry-run --no-git-checks"
   },
   "bin": {
     "a11y-test-mcp": "build/index.js"
