@@ -5,7 +5,6 @@
   "scripts": {
     "postinstall": "npx -y playwright install",
     "build": "tsc && chmod 755 build/index.js",
-    "build:tsgo": "tsgo && chmod 755 build/index.js",
     "start": "node build/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "pnpm run lint:e && pnpm run lint:d",
@@ -42,12 +41,12 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.5.0",
-    "@typescript/native-preview": "^7.0.0-dev.20260314.1",
     "dprint": "^0.52.0",
     "eslint": "^10.0.3",
     "eslint-config-flat-gitignore": "^2.2.1",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.0"
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.57.0",
+    "typescript-native": "npm:typescript@^7.0.2"
   },
   "dependencies": {
     "@axe-core/playwright": "^4.11.1",
