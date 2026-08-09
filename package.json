@@ -40,19 +40,19 @@
   "homepage": "https://github.com/noriyuki-shimizu/a11y-test-mcp/blob/main/README.md",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.5.0",
-    "dprint": "^0.52.0",
-    "eslint": "^10.0.3",
+    "@types/node": "^26.2.0",
+    "dprint": "^0.55.2",
+    "eslint": "^10.8.1",
     "eslint-config-flat-gitignore": "^2.2.1",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "^8.57.0",
+    "typescript-eslint": "^8.66.0",
     "typescript-native": "npm:typescript@^7.0.2"
   },
   "dependencies": {
-    "@axe-core/playwright": "^4.11.1",
-    "@modelcontextprotocol/sdk": "^1.27.1",
-    "axe-core": "^4.11.4",
-    "playwright": "^1.58.2",
+    "@axe-core/playwright": "^4.12.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "axe-core": "^4.13.0",
+    "playwright": "^1.62.1",
     "zod": "^4.3.6"
   },
   "pnpm": {
