@@ -192,17 +192,10 @@ const resolveScope = async (
     return page.frameLocator(frame.selector);
   }
   if (frame.url) {
-    // Wait until a frame matching the url is attached.
-    const handle = await page.waitForSelector('iframe', { timeout: 10_000 });
-    void handle;
-    const frames = page.frames();
-    const target = frames.find(f => f.url().startsWith(frame.url ?? ''));
-    if (!target) {
-      throw new Error(`Frame with url prefix "${frame.url}" not found`);
-    }
-    // FrameLocator is preferred but we only have a Frame here; fallback via frameLocator on parent.
-    // Best effort: locate by exact URL substring.
-    return page.frameLocator(`iframe[src*="${frame.url}"]`);
+    // Wait for the target iframe to be attached, then scope into it.
+    const selector = `iframe[src*="${frame.url}"]`;
+    await page.locator(selector).first().waitFor({ state: 'attached', timeout: 10_000 });
+    return page.frameLocator(selector);
   }
   return page;
 };
